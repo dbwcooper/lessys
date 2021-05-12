@@ -1,0 +1,19 @@
+.setSelectionw(@height) {
+  min-height: @height - 2px;
+  line-height: @height - 2px;
+}
+
+.getTagHeight(@height) {
+  height: @height;
+}
+
+.setSelection(@height) {
+  min-height: @height - 2px;
+  line-height: @height - 2px;
+  .getTagHeight(@height);
+  color: #fff;
+}
+
+body {
+  .getTagHeight('2px');
+}
