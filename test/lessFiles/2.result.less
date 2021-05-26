@@ -1,0 +1,54 @@
+@import "../../../theme/index.less";
+@ant-select: ~"@{ant-prefix}-select";
+@ant-select-dropdown: ~"@{ant-select}-dropdown";
+@stellr-select: ~"@{stellr-prefix}-select";
+@stellr-select-dropdown: ~"@{stellr-select}-dropdown";
+.setSelection(@height, @heightMedia, @size) {
+  .@{ant-select}-selection {
+    &__rendered {
+      .@{ant-select}-search__field {
+      }
+    }
+    .@{ant-select}-arrow,
+    .@{ant-select}-selection__clear {
+    }
+    .@{ant-select}-arrow {
+    }
+    .@{ant-select}-selection__clear {
+      &:hover {
+      }
+    }
+    &--multiple {
+      .@{ant-select}-selection__rendered {
+        > ul > li:hover {
+          &.@{ant-prefix}-select-selection__choice {
+            &__disabled {
+            }
+          }
+          .getTagHeight(@height, @heightMedia);
+          .max-tag-inner,
+          .max-tag-placeholder-tag {
+          }
+        }
+      }
+      &.@{ant-prefix}-select-disabled {
+        .@{ant-select}-selection__rendered {
+          > ul > li {
+            .max-tag-inner,
+            .max-tag-placeholder-tag {
+            }
+          }
+        }
+      }
+    }
+  }
+}
+.initSelect(@size) when (@size = small) {
+  .setSelection(@snx-height-small, @snx-height-small, small);
+}
+.initSelect(@size) when (@size = normal) {
+  .setSelection(@snx-height-normal, @snx-height-normal, normal);
+}
+.initSelect(@size) when (@size = large) {
+  .setSelection(@snx-height-large, @snx-height-large, large);
+}

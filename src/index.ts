@@ -17,6 +17,24 @@ const path7 = path.resolve('test/mock/comments/7.less');
 const select_style_path = path.resolve('test/components/select/style.less');
 const path_result = path.resolve('D:/lessToCss/dist/result.less');
 
+
+/**
+ *
+ * #1 获取整个项目的公用变量
+ *      less 变量
+ *      less 函数
+ *
+ * #2 获取 less 文件
+ * #3 格式化 less 文件
+ *
+ * #4 根据公用变量提取 less 文件内容，保留用到公用变量的结构
+ *     展开函数， 根据函数传参替换函数主体部分
+ *     根据公用变量剔除文件结构
+ *
+ * #5 组合 less 文件并输出
+ *
+ */
+
 const config: lessPathProps = {
   theme: {
     color: [

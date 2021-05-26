@@ -15,6 +15,7 @@ export interface funcDefinedProps {
   content: string;
 }
 
+
 export interface funcUsedProps {
   type: lessFuncTypeEnum.used;
   name: string;
@@ -23,7 +24,7 @@ export interface funcUsedProps {
   params: string[];
 }
 
-export interface funcVariableProps {
+export interface lessFunctionProps {
   func_used_array: funcUsedProps[]; // 当前 less string 用到的所有 function name
   func_defined: {
     [name: string]: funcDefinedProps;
@@ -48,7 +49,7 @@ export interface lessPathProps {
 export interface lessVariablesObjProps {
   [name: string]: {
     less_variable_obj: strObjProps;
-    less_variable_func_obj: funcVariableProps;
+    less_variable_func_obj: lessFunctionProps;
   };
 }
 export enum lessFuncTypeEnum {
