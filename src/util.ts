@@ -33,7 +33,7 @@ export const removeConstantLine = (str: string) => {
    @output 
     @table-bg-error: #ffd3c1;
  */
-export const removeComments = (str: string) => {
+export const removeComments = (str: string): string => {
   // const token_start_array_1 = "//";
   // const token_start_array_2 = "/*";
   // const token_end_array_1 = "\n";
@@ -113,7 +113,7 @@ export const removeComments = (str: string) => {
  * @param less_path less 文件路径
  * @returns string
  */
-export const getFileUTF8 = async (less_path: string) =>
+export const getFileUTF8 = async (less_path: string) => 
   fs.readFile(less_path, 'utf8');
 
 /**
@@ -124,7 +124,7 @@ export const getFileUTF8 = async (less_path: string) =>
  * }
  */
 export const getLessVariable = (str: string): strObjProps => {
-  const variable_obj = str
+  const variable_obj = removeComments(str)
     .split(REGX_variables)
     .reduce((prev: strObjProps = {}, current) => {
       if (current.includes(':')) {

@@ -201,11 +201,10 @@ const getNestFunction = (
       func_defined_regx_obj[0]
     )
   };
-
   str = expandFunctionImpl(str, func_used, func_defined);
 
-  return str;
-  // return getNestFunction(str, func_defined);
+  // return str;
+  return getNestFunction(str, func_defined);
 };
 
 /**
@@ -229,19 +228,20 @@ export const getFunctionProps = async (
         func_used_array: [],
         func_defined: {}
       };
-      arr.forEach(obj => {
-        if (obj.type === 'used') {
-          data.func_used_array.push(obj);
-        }
-        if (obj.type === 'defined') {
-          data.func_defined[obj.name] = obj;
-        }
-      });
+      arr
+        .filter(i => i)
+        .forEach(obj => {
+          if (obj.type === 'used') {
+            data.func_used_array.push(obj);
+          }
+          if (obj.type === 'defined') {
+            data.func_defined[obj.name] = obj;
+          }
+        });
       return data;
     })
     .then(data => {
       // 处理预定义函数中有使用到其他函数 的情况
-
       Object.keys(data.func_defined).forEach(func_name => {
         data.func_defined[func_name].content = getNestFunction(
           data.func_defined[func_name].content,
@@ -261,13 +261,18 @@ export const getFunctionProps = async (
  *
  * #2 在每个使用到函数的地方展开函数主体部分
  */
-export const expandFunction = async (str: string): Promise<string> => {
+export const expandFunction = async (
+  str: string,
+  common_func_defined?: { [name: string]: funcDefinedProps }
+): Promise<string> => {
   return getFunctionProps(str).then(data => {
-    data.func_used_array.reverse().forEach(item => {
-      const c = str.substring(item.start, item.end);
-      if (c.startsWith(item.name)) {
-        // 展开函数
-        str = expandFunctionImpl(str, item, data.func_defined);
+    const func_used_array = data.func_used_array.reverse();
+    const func_defined_map = { ...common_func_defined, ...data.func_defined };
+
+    func_used_array.forEach(func_used => {
+      const c = str.substring(func_used.start, func_used.end);
+      if (func_defined_map[func_used.name] && c.startsWith(func_used.name)) {
+        str = expandFunctionImpl(str, func_used, data.func_defined);
       }
     });
     return str;
