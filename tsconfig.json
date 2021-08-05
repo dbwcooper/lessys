@@ -1,5 +1,9 @@
 {
   "display": "Node 12",
+  "ts-node": {
+    "transpileOnly": true,
+    "files": true
+  },
   "compilerOptions": {
     "outDir": "./dist",
     "module": "commonjs",

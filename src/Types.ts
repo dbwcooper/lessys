@@ -25,8 +25,8 @@ export interface funcUsedProps {
 }
 
 export interface lessFunctionProps {
-  func_used_array: funcUsedProps[]; // 当前 less string 用到的所有 function name
-  func_defined: {
+  funcUsedList: funcUsedProps[]; // 当前 less string 用到的所有 function name
+  funcDefined: {
     [name: string]: funcDefinedProps;
   };
 }
@@ -40,16 +40,16 @@ export interface lessThemeObjProps {
   [name: string]: listenLessPathObjProps[];
 }
 
-export interface lessPathProps {
-  theme: themeDirProps;
-  components: string;
-  output?: string;
+export interface monitorConfigProps {
+  themeList: string[];
+  monitorDir: string;
+  outputDir: string; // '.theme'
 }
 
-export interface lessVariablesObjProps {
+export interface lessVariablesObjProps { 
   [name: string]: {
-    less_variable_obj: strObjProps;
-    less_variable_func_obj: lessFunctionProps;
+    lessVariables: strObjProps;
+    lessFunction: lessFunctionProps;
   };
 }
 export enum lessFuncTypeEnum {

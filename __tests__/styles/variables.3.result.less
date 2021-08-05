@@ -35,8 +35,7 @@
             &__disabled {
             }
           }
-  .@{ant-select}-selection__choice__content {
-  }
+          .getTagHeight(@height, @heightMedia);
           .max-tag-inner,
           .max-tag-placeholder-tag {
           }
@@ -56,52 +55,7 @@
 }
 :global {
   .@{ant-select} {
-  .@{ant-select}-selection {
-    border-color: @snx-m-color-5;
-    &__rendered {
-      color: @snx-m-color-10;
-      .@{ant-select}-search__field {
-      }
-    }
-    .@{ant-select}-arrow,
-    .@{ant-select}-selection__clear {
-    }
-    .@{ant-select}-arrow {
-      color: @snx-m-color-7;
-    }
-    .@{ant-select}-selection__clear {
-      color: @snx-m-color-5;
-      &:hover {
-        color: @snx-m-color-8;
-      }
-    }
-    &--multiple {
-      .@{ant-select}-selection__rendered {
-        > ul > li {
-          &.@{ant-prefix}-select-selection__choice {
-            color: @snx-m-color-10;
-            background: @snx-m-color-5;
-            &__disabled {
-            }
-          }
-  .@{ant-select}-selection__choice__content {
-  }
-          .max-tag-inner,
-          .max-tag-placeholder-tag {
-          }
-        }
-      }
-      &.@{ant-prefix}-select-disabled {
-        .@{ant-select}-selection__rendered {
-          > ul > li {
-            .max-tag-inner,
-            .max-tag-placeholder-tag {
-            }
-          }
-        }
-      }
-    }
-  }
+    .setSelection(@snx-height-small, @snx-height-small, small);
     &.@{stellr-select} {
       &-dropdown {
       }
@@ -394,8 +348,6 @@
         }
       }
     }
-  }
-  .@{ant-select}-selection {
   }
 }
 .getTagHeight(@height, @heightMedia) {
