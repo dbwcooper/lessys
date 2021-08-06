@@ -15,7 +15,6 @@ export interface funcDefinedProps {
   content: string;
 }
 
-
 export interface funcUsedProps {
   type: lessFuncTypeEnum.used;
   name: string;
@@ -30,23 +29,15 @@ export interface lessFunctionProps {
     [name: string]: funcDefinedProps;
   };
 }
-
-export interface listenLessPathObjProps {
-  origin_path: string; // 代码内的 less; 文件不会变更
-  new_path: string; // 换肤程序将使用的 文件路径， 此路径下的文件将实时变更
-}
-
-export interface lessThemeObjProps {
-  [name: string]: listenLessPathObjProps[];
-}
-
-export interface monitorConfigProps {
-  themeList: string[];
+export interface themeConfigProps {
+  theme: {
+    [name: string]: string[];
+  }
   monitorDir: string;
   outputDir: string; // '.theme'
 }
 
-export interface lessVariablesObjProps { 
+export interface lessVariablesObjProps {
   [name: string]: {
     lessVariables: strObjProps;
     lessFunction: lessFunctionProps;

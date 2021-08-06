@@ -1,20 +1,10 @@
 import path from 'path';
 import fs from 'fs-extra';
-import { monitorConfigProps, lessVariablesObjProps } from './Types';
+import { themeConfigProps, lessVariablesObjProps } from './Types';
 
 import { getLessFunction } from './expandFunction';
 import { getLessVariable, getFileUTF8 } from './util';
-
-const entryConfig: monitorConfigProps = {
-  themeList: [
-    '__tests__/theme/color/Default.less',
-    '__tests__/theme/color/Blue.less',
-    '__tests__/theme/layout/Default.less',
-    '__tests__/theme/layout/Large.less'
-  ],
-  monitorDir: '__tests__/components',
-  outputDir: '.theme'
-};
+import './monitorLess';
 
 /**
  *
@@ -27,7 +17,7 @@ const entryConfig: monitorConfigProps = {
  *   }
  * }
  */
-const getCommonVariable = async (lessFilePath: string, output: string) => {
+export const getCommonVariable = async (entryConfig: themeConfigProps) => {
   let arr = lessFilePath.split(/\\|\//); //  ["__tests__", "theme", "color", "Default.less"]
   const file = arr.pop(); // Default.less
   const cate = arr.pop(); // color
@@ -49,7 +39,7 @@ const getCommonVariable = async (lessFilePath: string, output: string) => {
 /**
  *  获取公用文件中的 变量和函数
  */
-const getThemeMap = async (
+export const getThemeMap = async (
   config: monitorConfigProps
 ): Promise<lessVariablesObjProps> => {
   const themeList = config.themeList;
@@ -71,7 +61,7 @@ const getThemeMap = async (
   return Object.assign({}, ...results);
 };
 
-// test
-// getThemeMap(entryConfig).then(data => {
-//   console.log('data', data);
-// });
+// // test
+// // getThemeMap(entryConfig).then(data => {
+// //   console.log('data', data);
+// // });
