@@ -3,9 +3,9 @@ import gulp from 'gulp';
 import through2 from 'through2';
 import { getLessVariable, getFileUTF8 } from './util';
 import { getLessFunction } from './expandFunction';
-import { themeConfigProps } from './Types';
+import { lessysConfigProps, themeConfigProps, themeItemProps } from './Types';
 
-const entryConfig: themeConfigProps = {
+const entryConfig: lessysConfigProps = {
   theme: {
     color: [
       '__tests__/theme/color/Default.less',
@@ -20,8 +20,19 @@ const entryConfig: themeConfigProps = {
   outputDir: '.theme'
 };
 
+let themeList: themeItemProps[] = [
+  // {
+  //   outputCssPath: '',
+  //   lessVariables,
+  //   lessFunction,
+  //   lessStr
+  // }
+];
+
 // 获取单个 theme 中的 less 变量和函数
-export const getThemeVariables = async (themePath: string) => {
+export const getThemeVariables = async (
+  themePath: string
+): Promise<Omit<themeItemProps, 'outputCssPath'>> => {
   const lessStr = await getFileUTF8(themePath);
   const lessVariables = getLessVariable(lessStr);
   const lessFunction = await getLessFunction(lessStr);
@@ -33,53 +44,60 @@ export const getThemeVariables = async (themePath: string) => {
 };
 
 export const getThemeConfig = async (
-  themePath: string,
-  cateKey: string,
-  outputDir: string
-) => {
-  const variables = await getThemeVariables(themePath);
-  const filename = path.basename(themePath); // Default.less
-  const outputCssPath = path.join(outputDir, cateKey + '/' + filename);
+  data: themeConfigProps
+): Promise<themeItemProps> => {
+  const variables = await getThemeVariables(data.themePath);
+  const filename = path.basename(data.themePath); // Default.less
+  const outputCssPath = path.join(
+    data.outputDir,
+    data.cateKey + '/' + filename
+  );
   return {
     outputCssPath,
-    ...variables,
-  }
+    ...variables
+  };
 };
 
-async function copyTheme(config: themeConfigProps) {
-  const themePathList = Object.keys(config.theme).reduce((acc, key) => {
-    acc.concat(config.theme[key]);
-    return acc;
-  }, []);
-  const outputDir = config.outputDir || '.theme';
-  const results = await Promise.all(
-    themePathList.map(p => {
-      getThemeVariables(p);
-    })
-  );
-}
+export const copyTheme = async (config: lessysConfigProps) => {
+  themeList = [];
 
-function copyComponents(config: themeConfigProps) {
-  const monitorFiles = config.monitorDir + '/**/*.less';
-  const outputPath = config.outputDir + '/monitor/';
+  let pathList: any = [];
+  for (const cateKey in config.theme) {
+    config.theme[cateKey].forEach(itemPath => {
+      pathList.push({
+        cateKey,
+        themePath: itemPath,
+        outputDir: config.outputDir
+      });
+    });
+  }
+  themeList = await Promise.all(pathList.map(getThemeConfig))
+  console.log(themeList);
+};
 
-  gulp
-    .src(monitorFiles)
-    // .pipe(gulp.dest(outputPath))
-    // 根据 theme list 生成特定的 less 文件
-    .pipe(
-      through2.obj(function (file, _, cb) {
-        if (file.isBuffer()) {
-          console.log(file.path);
-          const code = file.contents.toString();
-          file.contents = Buffer.from(code);
-        }
-        cb(null, file);
-      })
-    );
-}
+copyTheme(entryConfig);
 
-copyComponents(entryConfig);
+// function copyMonitorDir(config: themeConfigProps) {
+//   const monitorFiles = config.monitorDir + '/**/*.less';
+//   const outputPath = config.outputDir + '/monitor/';
+
+//   gulp
+//     .src(monitorFiles)
+//     // .pipe(gulp.dest(outputPath))
+//     // 根据 theme list 生成特定的 less 文件
+//     .pipe(
+//       through2.obj(function (file, _, cb) {
+//         if (file.isBuffer()) {
+//           console.log(file.path);
+//           const code = file.contents.toString();
+//           file.contents = Buffer.from(code);
+//         }
+//         cb(null, file);
+//       })
+//     );
+// }
+
+// copyComponents(entryConfig);
 
 // test
 // getThemeMap(entryConfig).then(data => {

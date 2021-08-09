@@ -29,12 +29,25 @@ export interface lessFunctionProps {
     [name: string]: funcDefinedProps;
   };
 }
-export interface themeConfigProps {
+export interface lessysConfigProps {
   theme: {
     [name: string]: string[];
-  }
+  };
   monitorDir: string;
   outputDir: string; // '.theme'
+}
+
+export interface themeItemProps {
+  outputCssPath: string;
+  lessVariables: strObjProps;
+  lessFunction: lessFunctionProps;
+  lessStr: string;
+}
+
+export interface themeConfigProps {
+  themePath: string;
+  cateKey: string;
+  outputDir: string;
 }
 
 export interface lessVariablesObjProps {
