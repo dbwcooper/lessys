@@ -39,6 +39,9 @@ export interface lessysConfigProps {
 
 export interface themeItemProps {
   outputCssPath: string;
+  outputCssName: string;
+  outputLessName: string;
+  cateKey: string;
   lessVariables: strObjProps;
   lessFunction: lessFunctionProps;
   lessStr: string;
@@ -60,4 +63,10 @@ export enum lessFuncTypeEnum {
   'used' = 'used',
   'defined' = 'defined',
   'others' = 'others'
+}
+
+export interface monitorLessFileProps {
+  [name: string]: {
+    [name: string]: string;
+  };
 }

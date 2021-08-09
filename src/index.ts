@@ -1,8 +1,19 @@
-import path from 'path';
-import fs from 'fs-extra';
-import { themeConfigProps, lessVariablesObjProps } from './Types';
+import {
+  strObjProps,
+  funcDefinedProps
+} from './Types';
 
-import { getLessFunction } from './expandFunction';
-import { getLessVariable, getFileUTF8 } from './util';
+import { expandFunction } from './expandFunction';
+import { extractVariables } from './extractVariables';
+import { formatLess } from './formatLess';
 import './monitorLess';
 
+export const extractLess = (
+  lessStr: string,
+  variable: strObjProps,
+  func_defined?: { [name: string]: funcDefinedProps }
+) => {
+  return formatLess(lessStr)
+    .then(str => expandFunction(str, func_defined))
+    .then(str => extractVariables(str, variable));
+};
