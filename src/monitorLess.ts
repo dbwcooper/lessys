@@ -1,5 +1,6 @@
 import path from 'path';
 import gulp from 'gulp';
+import gulpConcat from 'gulp-concat';
 import fs from 'fs-extra';
 import through2 from 'through2';
 import { getLessVariable, getFileUTF8 } from './util';
@@ -31,16 +32,16 @@ const entryConfig: lessysConfigProps = {
   outputDir: '.theme'
 };
 
-// let themeConfigList: themeItemProps[] = [
-//   {
-//     outputCssPath: 'D:/lessys/.theme/monitor/color/Default.less',
-//     cateKey: 'color',
-//     fileName: 'Default.less',
-//     lessVariables,
-//     lessFunction,
-//     lessStr
-//   }
-// ];
+let themeConfigList: themeItemProps[] = [
+  // {
+  //   outputCssPath: 'D:/lessys/.theme/monitor/color/Default.less',
+  //   cateKey: 'color',
+  //   fileName: 'Default.less',
+  //   lessVariables,
+  //   lessFunction,
+  //   lessStr
+  // }
+];
 
 const monitorLessMap: monitorLessFileProps = {
   //   'D:/lessys/__tests__/components/button/style.less': {
@@ -99,7 +100,6 @@ export const getSingleConfig = async (
 export const getThemeConfig = async (
   config: lessysConfigProps
 ): Promise<themeItemProps[]> => {
-  // themeConfigList = [];
   let pathList: any = [];
   for (const cateKey in config.theme) {
     config.theme[cateKey].forEach(itemPath => {
@@ -114,13 +114,12 @@ export const getThemeConfig = async (
 };
 
 // #1 生成 monitorLessMap
-// #2 生成 monitor 文件夹
+// #2 生成 .theme/monitor 文件夹
 const getMonitorLessVariables = async (config: lessysConfigProps) => {
-  const themeConfigList = await getThemeConfig(config);
+  themeConfigList = await getThemeConfig(config);
   const monitorFiles = config.monitorDir + '/**/*.less';
   const outputDirPath = path.resolve(config.outputDir, 'monitor'); // D:\lessys\.theme\monitor
   const monitorDirPath = path.resolve(config.monitorDir); // D:\lessys\__tests__\components
-
   gulp
     .src(monitorFiles)
     // .pipe(gulp.dest(outputPath))
@@ -128,7 +127,15 @@ const getMonitorLessVariables = async (config: lessysConfigProps) => {
     .pipe(
       through2.obj(function (file, _, cb) {
         if (file.isBuffer()) {
+          // -----------
+          // TODO: 需要处理 less 文件中的 @import， 将相对路径转变为绝对路径
           const originLessStr = file.contents.toString();
+          console.log(file.path)
+          const formatter = path.parse(file.path)
+          const p = path.resolve(formatter.dir, '../../theme/index.less')
+          console.log(p)
+          // -----------
+
           const stylePath = file.path.toString();
           monitorLessMap[stylePath] = {};
           const fileOutputDir = path
@@ -164,18 +171,27 @@ const getMonitorLessVariables = async (config: lessysConfigProps) => {
       })
     );
 };
-getMonitorLessVariables(entryConfig);
 
-// TODO: merge less file
-const mergeLessFile = async () => {
-  for (const lessPath in monitorLessMap) {
-  }
+getMonitorLessVariables(entryConfig)
+
+// TODO: merge component less file
+const mergeLessFile = async (config: lessysConfigProps) => {
+  themeConfigList = await getThemeConfig(config);
+  themeConfigList.map(item => {
+    const reg = `${config.outputDir}/monitor/**/${item.cateKey}/${item.outputLessName}`;
+    const outputDir = `${config.outputDir}/${item.cateKey}/`;
+    gulp
+      .src(reg)
+      .pipe(gulpConcat(item.outputLessName))
+      .pipe(gulp.dest(outputDir));
+  });
 };
+// mergeLessFile(entryConfig);
 
 // TODO: 项目开发阶段监听 less 文件
-gulp.task('monitorLessFile', function () {
-  let monitorRegx = entryConfig.monitorDir + '/**/.less'
-  gulp.watch(monitorRegx, () => {
+// gulp.task('monitorLessFile', function () {
+//   let monitorRegx = entryConfig.monitorDir + '/**/.less'
+//   gulp.watch(monitorRegx, () => {
 
-  })
-});
+//   })
+// });
