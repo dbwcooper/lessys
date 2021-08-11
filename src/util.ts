@@ -1,4 +1,6 @@
 import fs from 'fs-extra';
+import path from 'path';
+import less from 'less';
 import { strObjProps } from './Types';
 
 const REGX_line = /\n/g; // 换行符
@@ -130,3 +132,44 @@ export const getLessVariable = (str: string): strObjProps => {
       return prev;
     }, {});
 };
+
+
+// @import './xxx' => @import 'E:/xxx'
+// 将less 文件中的相对路径转换为 绝对路径
+export const transferAbsolutePath = (lessStr: string, dir: string): string => {
+
+  // 找到 @import './Default.less' 行
+  let regx1 = /@import\s?\S*;/g;
+  let regx2 = /[\'|\"]/g;
+
+  // ['../theme/Default.less']
+  const pathArr = [...lessStr.matchAll(regx1)].map(item => {
+    let lineStr = item[0];
+    let startIndex = [...lineStr.matchAll(regx2)][0].index + 1;
+    let endIndex = [...lineStr.matchAll(regx2)][1].index;
+    return lineStr.substring(startIndex, endIndex)
+  });
+
+  const transferPathArr = pathArr.map(item => {
+    if (!path.isAbsolute(item)) {
+      // return path.resolve(dir, item)
+      return path.resolve(dir, item).replace(/\\/g, '/')
+    }
+    return item;
+  });
+
+  transferPathArr.forEach((newPath, index) => {
+    let oldPath = pathArr[index];
+    lessStr = lessStr.replace(oldPath, newPath);
+  })
+
+  return lessStr
+}
+
+
+export const lessToCss = async (lessInputStr: string): Promise<string> => {
+  return less.render(lessInputStr).then(output => output.css.replace(/:global ?/g, '')).catch(e => {
+    console.log(e)
+    return ''
+  })
+}

@@ -3,7 +3,7 @@ import gulp from 'gulp';
 import gulpConcat from 'gulp-concat';
 import fs from 'fs-extra';
 import through2 from 'through2';
-import { getLessVariable, getFileUTF8 } from './util';
+import { getLessVariable, getFileUTF8, transferAbsolutePath, lessToCss } from './util';
 import { getLessFunction, expandFunction } from './expandFunction';
 import {
   lessysConfigProps,
@@ -120,6 +120,8 @@ const getMonitorLessVariables = async (config: lessysConfigProps) => {
   const monitorFiles = config.monitorDir + '/**/*.less';
   const outputDirPath = path.resolve(config.outputDir, 'monitor'); // D:\lessys\.theme\monitor
   const monitorDirPath = path.resolve(config.monitorDir); // D:\lessys\__tests__\components
+
+  // TODO: replace with globby
   gulp
     .src(monitorFiles)
     // .pipe(gulp.dest(outputPath))
@@ -127,14 +129,10 @@ const getMonitorLessVariables = async (config: lessysConfigProps) => {
     .pipe(
       through2.obj(function (file, _, cb) {
         if (file.isBuffer()) {
-          // -----------
-          // TODO: 需要处理 less 文件中的 @import， 将相对路径转变为绝对路径
-          const originLessStr = file.contents.toString();
-          console.log(file.path)
-          const formatter = path.parse(file.path)
-          const p = path.resolve(formatter.dir, '../../theme/index.less')
-          console.log(p)
-          // -----------
+          // 处理 less 文件中的 @import， 将相对路径转变为绝对路径
+          let originLessStr = file.contents.toString();
+          const fileParser = path.parse(file.path)
+          originLessStr = transferAbsolutePath(originLessStr, fileParser.dir)
 
           const stylePath = file.path.toString();
           monitorLessMap[stylePath] = {};
@@ -149,44 +147,53 @@ const getMonitorLessVariables = async (config: lessysConfigProps) => {
                 item.cateKey,
                 item.outputLessName
               );
+              const cssThemePath = path.join(
+                fileOutputDir,
+                item.cateKey,
+                item.outputCssName
+              );
+
               const lessStr = await extractLess(
                 originLessStr,
                 item.lessVariables,
                 item.lessFunction.funcDefined
               );
               monitorLessMap[stylePath][styleThemePath] = lessStr;
-
-              fs.createFile(styleThemePath).then(() => {
-                fs.writeFile(styleThemePath, lessStr);
-              });
-              return {
-                styleThemePath,
-                lessStr
-              };
+              const cssStr = await lessToCss(
+                lessStr,
+              );
+              return Promise.all([
+                fs.createFile(styleThemePath).then(() => {
+                  fs.writeFile(styleThemePath, lessStr);
+                }),
+                fs.createFile(cssThemePath).then(() => {
+                  fs.writeFile(cssThemePath, cssStr);
+                })])
             })
           );
           file.contents = Buffer.from(originLessStr);
         }
         cb(null, file);
       })
-    );
+    )
 };
 
-getMonitorLessVariables(entryConfig)
+// getMonitorLessVariables(entryConfig)
 
-// TODO: merge component less file
+// #1 将 monitor 中的 less 文件转换为 css 文件
+// #2 合并 css 文件
 const mergeLessFile = async (config: lessysConfigProps) => {
   themeConfigList = await getThemeConfig(config);
   themeConfigList.map(item => {
-    const reg = `${config.outputDir}/monitor/**/${item.cateKey}/${item.outputLessName}`;
+    const reg = `${config.outputDir}/monitor/**/${item.cateKey}/${item.outputCssName}`;
     const outputDir = `${config.outputDir}/${item.cateKey}/`;
     gulp
       .src(reg)
-      .pipe(gulpConcat(item.outputLessName))
+      .pipe(gulpConcat(item.outputCssName))
       .pipe(gulp.dest(outputDir));
   });
 };
-// mergeLessFile(entryConfig);
+mergeLessFile(entryConfig);
 
 // TODO: 项目开发阶段监听 less 文件
 // gulp.task('monitorLessFile', function () {
