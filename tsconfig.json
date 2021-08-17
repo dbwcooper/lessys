@@ -1,17 +1,18 @@
 {
-  "display": "Node 12",
+  "display": "Node 16",
   "ts-node": {
     "transpileOnly": true,
     "files": true
   },
   "compilerOptions": {
     "outDir": "./dist",
-    "module": "commonjs",
+    "module": "es2020",
+    "target": "es2021",
     "esModuleInterop": true, // esm 支持 cjs, 默认为 false
-    "target": "es2020",
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
     "baseUrl": "app.ts",
     "paths": {
       "*": ["src/types/*"]

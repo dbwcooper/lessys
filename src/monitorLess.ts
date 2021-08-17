@@ -32,7 +32,7 @@ const entryConfig: lessysConfigProps = {
   outputDir: '.theme'
 };
 
-let themeConfigList: themeItemProps[] = [
+let commonThemeList: themeItemProps[] = [
   // {
   //   outputCssPath: 'D:/lessys/.theme/monitor/color/Default.less',
   //   cateKey: 'color',
@@ -52,71 +52,10 @@ const monitorLessMap: monitorLessFileProps = {
   //   }
 };
 
-export const extractLess = (
-  lessStr: string,
-  variable: strObjProps,
-  func_defined?: { [name: string]: funcDefinedProps }
-): Promise<string> => {
-  return formatLess(lessStr)
-    .then(str => expandFunction(str, func_defined))
-    .then(str => extractVariables(str, variable));
-};
-
-// 获取单个 theme 中的 less 变量和函数
-export const getThemeVariables = async (
-  themePath: string
-): Promise<
-  Omit<
-    themeItemProps,
-    'outputCssPath' | 'outputCssName' | 'cateKey' | 'outputLessName'
-  >
-> => {
-  const lessStr = await getFileUTF8(themePath);
-  const lessVariables = getLessVariable(lessStr);
-  const lessFunction = await getLessFunction(lessStr);
-  return {
-    lessVariables,
-    lessFunction,
-    lessStr
-  };
-};
-
-export const getSingleConfig = async (
-  data: themeConfigProps
-): Promise<themeItemProps> => {
-  const variables = await getThemeVariables(data.themePath);
-  const cssName = path.parse(data.themePath).name + '.css'; // Default.css
-  const lessName = path.parse(data.themePath).name + '.less'; // Default.less
-  const outputCssPath = path.join(data.outputDir, data.cateKey + '/' + cssName);
-  return {
-    outputCssPath: path.resolve(outputCssPath),
-    outputCssName: cssName,
-    outputLessName: lessName,
-    cateKey: data.cateKey,
-    ...variables
-  };
-};
-
-export const getThemeConfig = async (
-  config: lessysConfigProps
-): Promise<themeItemProps[]> => {
-  let pathList: any = [];
-  for (const cateKey in config.theme) {
-    config.theme[cateKey].forEach(itemPath => {
-      pathList.push({
-        cateKey,
-        themePath: itemPath,
-        outputDir: config.outputDir
-      });
-    });
-  }
-  return await Promise.all(pathList.map(getSingleConfig));
-};
-
 // #1 生成 monitorLessMap
 // #2 生成 .theme/monitor 文件夹
 const getMonitorLessVariables = async (config: lessysConfigProps) => {
-  themeConfigList = await getThemeConfig(config);
+  commonThemeList = await getCommonTheme(config);
   const monitorFiles = config.monitorDir + '/**/*.less';
   const outputDirPath = path.resolve(config.outputDir, 'monitor'); // D:\lessys\.theme\monitor
   const monitorDirPath = path.resolve(config.monitorDir); // D:\lessys\__tests__\components
@@ -141,7 +80,7 @@ const getMonitorLessVariables = async (config: lessysConfigProps) => {
             .dir.replace(monitorDirPath, outputDirPath);
 
           Promise.all(
-            themeConfigList.map(async item => {
+            commonThemeList.map(async item => {
               const styleThemePath = path.join(
                 fileOutputDir,
                 item.cateKey,
@@ -183,8 +122,8 @@ const getMonitorLessVariables = async (config: lessysConfigProps) => {
 // #1 将 monitor 中的 less 文件转换为 css 文件
 // #2 合并 css 文件
 const mergeLessFile = async (config: lessysConfigProps) => {
-  themeConfigList = await getThemeConfig(config);
-  themeConfigList.map(item => {
+  commonThemeList = await getCommonTheme(config);
+  commonThemeList.map(item => {
     const reg = `${config.outputDir}/monitor/**/${item.cateKey}/${item.outputCssName}`;
     const outputDir = `${config.outputDir}/${item.cateKey}/`;
     gulp
