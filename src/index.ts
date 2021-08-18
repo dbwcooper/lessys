@@ -8,7 +8,8 @@ import {
   getLessVariable,
   getFileUTF8,
   transferAbsolutePath,
-  lessToCss
+  lessToCss,
+  removeComments
 } from './util';
 import {
   lessysConfigProps,
@@ -39,10 +40,14 @@ export const getThemeVariables = async (
 ): Promise<
   Omit<
     themeItemProps,
-    'outputCssPath' | 'outputCssName' | 'cateKey' | 'outputLessName'
+    | 'originLessPath'
+    | 'outputCssPath'
+    | 'outputCssName'
+    | 'cateKey'
+    | 'outputLessName'
   >
 > => {
-  const lessStr = await getFileUTF8(themePath);
+  const lessStr = await getFileUTF8(themePath).then(removeComments);
   const lessVariables = getLessVariable(lessStr);
   const lessFunction = await getLessFunction(lessStr);
   return {
@@ -61,7 +66,9 @@ export const getSingleTheme = async (
   const cssName = path.parse(data.themePath).name + '.css'; // Default.css
   const lessName = path.parse(data.themePath).name + '.less'; // Default.less
   const outputCssPath = path.join(data.outputDir, data.cateKey + '/' + cssName);
+  const originLessPath = path.resolve(data.themePath);
   return {
+    originLessPath,
     outputCssPath: path.resolve(outputCssPath),
     outputCssName: cssName,
     outputLessName: lessName,
@@ -127,7 +134,7 @@ export const generateOneLess = async (
             item.outputCssName
           );
 
-          const cssStr = await lessToCss(outputLessStr);
+          const cssStr = await lessToCss(outputLessStr, item);
           const result = {
             outputLessPath,
             outputCssStr: cssStr,
@@ -199,20 +206,20 @@ export const main = async (config: lessysConfigProps) => {
 };
 
 // ------------------ test -------------------
-const entryConfig: lessysConfigProps = {
-  theme: {
-    color: [
-      '__tests__/theme/color/Default.less',
-      '__tests__/theme/color/Blue.less'
-    ],
-    layout: [
-      '__tests__/theme/layout/Default.less',
-      '__tests__/theme/layout/Large.less'
-    ]
-  },
-  monitorDir: '__tests__/components',
-  outputDir: '.theme'
-};
-main(entryConfig);
+// const entryConfig: lessysConfigProps = {
+//   theme: {
+//     color: [
+//       '__tests__/theme/color/Default.less',
+//       '__tests__/theme/color/Blue.less'
+//     ],
+//     layout: [
+//       '__tests__/theme/layout/Default.less',
+//       '__tests__/theme/layout/Large.less'
+//     ]
+//   },
+//   monitorDir: '__tests__/components',
+//   outputDir: '.theme'
+// };
+// main(entryConfig);
 
 export default main;

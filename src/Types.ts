@@ -38,13 +38,14 @@ export interface lessysConfigProps {
 }
 
 export interface themeItemProps {
-  outputCssPath: string;
-  outputCssName: string;
-  outputLessName: string;
-  cateKey: string;
-  lessVariables: strObjProps;
-  lessFunction: lessFunctionProps;
-  lessStr: string;
+  originLessPath: string; // 原始的 theme less 路径,
+  outputCssPath: string; // 最终输出的 theme css 路径
+  outputCssName: string; // 最终输出的 theme less 路径
+  outputLessName: string; // 最终输出的 theme less 名: Default.less
+  cateKey: string; // color | layout
+  lessVariables: strObjProps; // theme less 的变量
+  lessFunction: lessFunctionProps; // theme less 的函数变量
+  lessStr: string; // theme less 字符串
 }
 
 export interface themeConfigProps {

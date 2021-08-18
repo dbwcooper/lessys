@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import less from 'less';
-import { strObjProps } from './Types';
+import { strObjProps, themeItemProps } from './Types';
 
 const REGX_line = /\n/g; // 换行符
 const REGX_variables = /;/g;
@@ -168,7 +168,11 @@ export const transferAbsolutePath = (lessStr: string, dir: string): string => {
   return lessStr;
 };
 
-export const lessToCss = async (lessInputStr: string): Promise<string> => {
+// 待处理编译css 时取不同的 theme 问题
+export const lessToCss = async (
+  lessInputStr: string,
+  themeItem: themeItemProps
+): Promise<string> => {
   return less
     .render(lessInputStr)
     .then((output) => output.css.replace(/:global ?/g, ''))
