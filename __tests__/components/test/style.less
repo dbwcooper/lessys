@@ -1,0 +1,13 @@
+@import '../../theme/index.less';
+.setHeight(@height) {
+  min-height: @height - 2px;
+  line-height: @height - 2px;
+}
+
+body {
+  .setHeight(@snx-px1);
+
+  .height {
+    .setHeight(@snx-px2);
+  }
+}

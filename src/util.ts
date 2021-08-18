@@ -12,7 +12,7 @@ const REGX_variables = /;/g;
 export const removeConstantLine = (str: string) => {
   return str
     .split(REGX_line)
-    .filter(item => {
+    .filter((item) => {
       return (
         item.includes('@') ||
         item.includes('{') ||
@@ -42,13 +42,17 @@ export const removeComments = (str: string): string => {
   const REGX_token_end_array_2 = /\*\//g;
 
   let tsa1 = [...str.matchAll(REGX_token_start_array_1)].map(
-    item => item.index
+    (item) => item.index
   ); // [80, 82, 84, 131, 181];
   let tsa2 = [...str.matchAll(REGX_token_start_array_2)].map(
-    item => item.index
+    (item) => item.index
   ); // [134, 430];
-  let tea1 = [...str.matchAll(REGX_token_end_array_1)].map(item => item.index); // [36, 37, 79, 130, 179, 180, 242];
-  let tea2 = [...str.matchAll(REGX_token_end_array_2)].map(item => item.index); // [485];
+  let tea1 = [...str.matchAll(REGX_token_end_array_1)].map(
+    (item) => item.index
+  ); // [36, 37, 79, 130, 179, 180, 242];
+  let tea2 = [...str.matchAll(REGX_token_end_array_2)].map(
+    (item) => item.index
+  ); // [485];
 
   const comments = [];
   while (tsa1.length > 0 || tsa2.length > 0) {
@@ -63,23 +67,23 @@ export const removeComments = (str: string): string => {
     let tei = 0;
     if (tType === 'tsa1') {
       tsi = tsa1[0];
-      tei = tea1.filter(i => i > tsi)[0];
+      tei = tea1.filter((i) => i > tsi)[0];
     } else {
       tsi = tsa2[0];
-      tei = tea2.filter(i => i > tsi)[0];
+      tei = tea2.filter((i) => i > tsi)[0];
     }
     comments.unshift([tsi, tei, tType]);
 
     // 重置 数组
-    tsa1 = tsa1.filter(i => i > tei);
-    tsa2 = tsa2.filter(i => i > tei);
-    tea1 = tea1.filter(i => i > tei);
-    tea2 = tea2.filter(i => i > tei);
+    tsa1 = tsa1.filter((i) => i > tei);
+    tsa2 = tsa2.filter((i) => i > tei);
+    tea1 = tea1.filter((i) => i > tei);
+    tea2 = tea2.filter((i) => i > tei);
   }
 
   // 删除 str 中的注释
   if (comments.length > 0) {
-    comments.forEach(arr => {
+    comments.forEach((arr) => {
       let si = arr[0];
       let ei = arr[1];
       let tType = arr[2];
@@ -133,27 +137,25 @@ export const getLessVariable = (str: string): strObjProps => {
     }, {});
 };
 
-
 // @import './xxx' => @import 'E:/xxx'
 // 将less 文件中的相对路径转换为 绝对路径
 export const transferAbsolutePath = (lessStr: string, dir: string): string => {
-
   // 找到 @import './Default.less' 行
   let regx1 = /@import\s?\S*;/g;
   let regx2 = /[\'|\"]/g;
 
   // ['../theme/Default.less']
-  const pathArr = [...lessStr.matchAll(regx1)].map(item => {
+  const pathArr = [...lessStr.matchAll(regx1)].map((item) => {
     let lineStr = item[0];
     let startIndex = [...lineStr.matchAll(regx2)][0].index + 1;
     let endIndex = [...lineStr.matchAll(regx2)][1].index;
-    return lineStr.substring(startIndex, endIndex)
+    return lineStr.substring(startIndex, endIndex);
   });
 
-  const transferPathArr = pathArr.map(item => {
+  const transferPathArr = pathArr.map((item) => {
     if (!path.isAbsolute(item)) {
       // return path.resolve(dir, item)
-      return path.resolve(dir, item).replace(/\\/g, '/')
+      return path.resolve(dir, item).replace(/\\/g, '/');
     }
     return item;
   });
@@ -161,15 +163,18 @@ export const transferAbsolutePath = (lessStr: string, dir: string): string => {
   transferPathArr.forEach((newPath, index) => {
     let oldPath = pathArr[index];
     lessStr = lessStr.replace(oldPath, newPath);
-  })
+  });
 
-  return lessStr
-}
-
+  return lessStr;
+};
 
 export const lessToCss = async (lessInputStr: string): Promise<string> => {
-  return less.render(lessInputStr).then(output => output.css.replace(/:global ?/g, '')).catch(e => {
-    console.log(e)
-    return ''
-  })
-}
+  return less
+    .render(lessInputStr)
+    .then((output) => output.css.replace(/:global ?/g, ''))
+    .then(removeComments)
+    .catch((e) => {
+      console.log(e);
+      return '';
+    });
+};

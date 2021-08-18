@@ -1,11 +1,15 @@
-
 import path from 'path';
 import globby from 'globby';
-
+import fs from 'fs-extra';
 import { expandFunction, getLessFunction } from './expandFunction';
 import { extractVariables } from './extractVariables';
 import { formatLess } from './formatLess';
-import { getLessVariable, getFileUTF8, } from './util';
+import {
+  getLessVariable,
+  getFileUTF8,
+  transferAbsolutePath,
+  lessToCss
+} from './util';
 import {
   lessysConfigProps,
   themeConfigProps,
@@ -13,7 +17,6 @@ import {
   strObjProps,
   funcDefinedProps
 } from './Types';
-// import './monitorLess';
 
 // 根据 公用变量、函数 删除一些与换肤无关结构。
 // accept: 一个 less 字符串，公用变量、函数
@@ -24,8 +27,8 @@ export const extractLess = async (
   func_defined?: { [name: string]: funcDefinedProps }
 ): Promise<string> => {
   return formatLess(lessStr)
-    .then(str => expandFunction(str, func_defined))
-    .then(str => extractVariables(str, variable));
+    .then((str) => expandFunction(str, func_defined))
+    .then((str) => extractVariables(str, variable));
 };
 
 // 获取单个 theme 中的 less 变量和函数
@@ -74,7 +77,7 @@ export const getCommonTheme = async (
 ): Promise<themeItemProps[]> => {
   let pathList: any = [];
   for (const cateKey in config.theme) {
-    config.theme[cateKey].forEach(itemPath => {
+    config.theme[cateKey].forEach((itemPath) => {
       pathList.push({
         cateKey,
         themePath: itemPath,
@@ -85,22 +88,117 @@ export const getCommonTheme = async (
   return await Promise.all(pathList.map(getSingleTheme));
 };
 
-export const transferComponentLess = async (commonThemeList: themeItemProps[], config: lessysConfigProps) => {
-  const monitorFileRegx = config.monitorDir + '/**/*.less'; // D:\lessys\__tests__\components\**\*.less
-  const outputDirPath = path.resolve(config.outputDir, 'monitor'); // D:\lessys\.theme\monitor
+// 映射 D:\lessys\__tests__\components\button\style.less  ->
+//      D:\lessys\.theme\monitor\button\color\Default.less
+//      D:\lessys\.theme\monitor\button\color\Blue.less
+//      D:\lessys\.theme\monitor\button\layout\Blue.less
+//      D:\lessys\.theme\monitor\button\layout\Large.less
+export const generateOneLess = async (
+  commonThemeList: themeItemProps[],
+  config: lessysConfigProps,
+  lessFilePath: string
+) => {
+  const outputMonitorDirPath = path.resolve(config.outputDir, 'monitor'); // D:\lessys\.theme\monitor
   const monitorDirPath = path.resolve(config.monitorDir); // D:\lessys\__tests__\components
+  lessFilePath = path.resolve(lessFilePath);
+  return getFileUTF8(lessFilePath).then((lessStr) => {
+    // #1 将 lessStr 中的相对路径转换为 绝对路径
+    const pathParser = path.parse(lessFilePath);
+    lessStr = transferAbsolutePath(lessStr, pathParser.dir);
 
+    // #2 根据 commonThemeList 生成 component 级的 less 文件
+    return Promise.all(
+      commonThemeList.map((item) => {
+        return extractLess(
+          lessStr,
+          item.lessVariables,
+          item.lessFunction.funcDefined
+        ).then(async (outputLessStr) => {
+          // 组装 output less 文件的路径
+          // TODO: output css | 返回格式
+          const outputLessPath = path.join(
+            pathParser.dir.replace(monitorDirPath, outputMonitorDirPath),
+            item.cateKey,
+            item.outputLessName
+          );
+          const outputCssPath = path.join(
+            pathParser.dir.replace(monitorDirPath, outputMonitorDirPath),
+            item.cateKey,
+            item.outputCssName
+          );
+
+          const cssStr = await lessToCss(outputLessStr);
+          const result = {
+            outputLessPath,
+            outputCssStr: cssStr,
+            outputThemeCssPath: item.outputCssPath
+          };
+          await Promise.all([
+            fs
+              .createFile(outputLessPath)
+              .then(() => fs.writeFile(outputLessPath, outputLessStr)),
+            fs
+              .createFile(outputCssPath)
+              .then(() => fs.writeFile(outputCssPath, cssStr))
+          ]);
+          return result;
+        });
+      })
+    );
+  });
+};
+
+export const transferComponentLess = async (
+  commonThemeList: themeItemProps[],
+  config: lessysConfigProps
+) => {
+  const monitorFileRegx = config.monitorDir + '/**/*.less'; // D:\lessys\__tests__\components\**\*.less
   const lessPaths = await globby(monitorFileRegx);
-
-  console.log(lessPaths)
-}
+  return (
+    Promise.all(
+      // 生成 .theme/monitor/**/*.less 文件
+      lessPaths.map((lessPath) =>
+        generateOneLess(commonThemeList, config, lessPath)
+      )
+    )
+      // merge 各个组件同类的 css 文件，生成 .theme/color/*.css 文件
+      .then((results) => {
+        const themeCssMap: strObjProps = {};
+        results.forEach((arr) => {
+          arr.forEach((item) => {
+            let key = item.outputThemeCssPath;
+            let value = item.outputCssStr;
+            if (themeCssMap[key]) {
+              themeCssMap[key] += value;
+            } else {
+              themeCssMap[key] = value;
+            }
+          });
+        });
+        return themeCssMap;
+      })
+      .then((themeCssMap) => {
+        return Promise.all([
+          Object.keys(themeCssMap).map((themeCssPath) => {
+            return fs
+              .createFile(themeCssPath)
+              .then(() =>
+                fs.writeFile(themeCssPath, themeCssMap[themeCssPath])
+              );
+          })
+        ]).then(() => 'success');
+      })
+  );
+};
 
 export const main = async (config: lessysConfigProps) => {
   // #1 获取主题的配置列表
   const commonThemeList = await getCommonTheme(config);
   // #2 生成 .theme/monitor/**/*.less 文件
-  const data = await transferComponentLess(commonThemeList, config)
-}
+  await transferComponentLess(commonThemeList, config);
+};
+
+// ------------------ test -------------------
 const entryConfig: lessysConfigProps = {
   theme: {
     color: [
@@ -115,6 +213,6 @@ const entryConfig: lessysConfigProps = {
   monitorDir: '__tests__/components',
   outputDir: '.theme'
 };
-main(entryConfig)
+main(entryConfig);
 
 export default main;
