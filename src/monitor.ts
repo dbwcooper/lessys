@@ -60,7 +60,6 @@ const mergeCss = (
 const handleLessChange = async (lessPath: string) => {
   const config = getConfig();
   const commonThemeList = await getCommonTheme(config);
-  console.log(commonThemeList)
   return generateOneLess(commonThemeList, config, lessPath).then(() =>
     mergeCss(commonThemeList, config)
   );

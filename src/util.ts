@@ -173,8 +173,12 @@ export const lessToCss = async (
   lessInputStr: string,
   themeItem: themeItemProps
 ): Promise<string> => {
+  const renderOptions = {
+    math: 'always' as any, // 运算 10px/2
+    modifyVars: themeItem.lessVariables
+  };
   return less
-    .render(lessInputStr)
+    .render(lessInputStr, renderOptions)
     .then((output) => output.css.replace(/:global ?/g, ''))
     .then(removeComments)
     .catch((e) => {
