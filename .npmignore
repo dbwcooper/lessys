@@ -1,0 +1,9 @@
+node_modules/*
+dist/
+.theme/
+yarn.lock
+.git/
+
+__tests__/*
+lessys.config.js
+nodemon.json

@@ -1,10 +1,11 @@
 {
-  "name": "less-theme-plugin",
+  "name": "lessys",
   "version": "1.0.0",
   "main": "./dist/index.js",
+  "description": "Build your themes by lessys",
   "license": "MIT",
   "bin": {
-    "lessys": "dist/index.js"
+    "lessys": "./dist/index.js"
   },
   "scripts": {
     "dev": "nodemon",
@@ -12,6 +13,7 @@
     "build": "etsc"
   },
   "devDependencies": {
+    "@types/less": "^3.0.3",
     "@jest/globals": "^27.0.6",
     "@types/fs-extra": "^9.0.12",
     "@types/gulp": "^4.0.9",
@@ -21,7 +23,6 @@
     "nodemon": "^2.0.12"
   },
   "dependencies": {
-    "@types/less": "^3.0.3",
     "esbuild": "^0.12.20",
     "fs-extra": "^10.0.0",
     "gulp": "^4.0.2",
