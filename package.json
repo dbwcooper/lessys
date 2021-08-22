@@ -1,12 +1,15 @@
 {
-  "name": "esbuild-test",
+  "name": "less-theme-plugin",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "license": "MIT",
+  "bin": {
+    "lessys": "dist/index.js"
+  },
   "scripts": {
     "dev": "nodemon",
-    "dev:watch": "etsc && node ./dist/monitor.js",
-    "build": "esbuild src/index.ts --bundle --outfile=dist/index.js"
+    "dev:watch": "etsc && node ./dist/index.js",
+    "build": "etsc"
   },
   "devDependencies": {
     "@jest/globals": "^27.0.6",

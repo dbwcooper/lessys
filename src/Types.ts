@@ -33,8 +33,9 @@ export interface lessysConfigProps {
   theme: {
     [name: string]: string[];
   };
-  monitorDir: string;
+  componentDir: string;
   outputDir: string; // '.theme'
+  watching: boolean, // 监控 componentDir 文件夹中的 less 文件是否变更
 }
 
 export interface themeItemProps {

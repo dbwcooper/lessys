@@ -4,12 +4,14 @@ import fs from 'fs-extra';
 import { expandFunction, getLessFunction } from './expandFunction';
 import { extractVariables } from './extractVariables';
 import { formatLess } from './formatLess';
+import { monitor } from './monitor';
 import {
   getLessVariable,
   getFileUTF8,
   transferAbsolutePath,
   lessToCss,
-  removeComments
+  removeComments,
+  getUserConfig
 } from './util';
 import {
   lessysConfigProps,
@@ -98,15 +100,14 @@ export const getCommonTheme = async (
 // 映射 D:\lessys\__tests__\components\button\style.less  ->
 //      D:\lessys\.theme\monitor\button\color\Default.less
 //      D:\lessys\.theme\monitor\button\color\Blue.less
-//      D:\lessys\.theme\monitor\button\layout\Blue.less
-//      D:\lessys\.theme\monitor\button\layout\Large.less
+//      ...
 export const generateOneLess = async (
   commonThemeList: themeItemProps[],
   config: lessysConfigProps,
   lessFilePath: string
 ) => {
-  const outputMonitorDirPath = path.resolve(config.outputDir, 'monitor'); // D:\lessys\.theme\monitor
-  const monitorDirPath = path.resolve(config.monitorDir); // D:\lessys\__tests__\components
+  const outputcomponentDirPath = path.resolve(config.outputDir, 'monitor'); // D:\lessys\.theme\monitor
+  const componentDirPath = path.resolve(config.componentDir); // D:\lessys\__tests__\components
   lessFilePath = path.resolve(lessFilePath);
   return getFileUTF8(lessFilePath).then((lessStr) => {
     // #1 将 lessStr 中的相对路径转换为 绝对路径
@@ -124,12 +125,12 @@ export const generateOneLess = async (
           // 组装 output less 文件的路径
           // TODO: output css | 返回格式
           const outputLessPath = path.join(
-            pathParser.dir.replace(monitorDirPath, outputMonitorDirPath),
+            pathParser.dir.replace(componentDirPath, outputcomponentDirPath),
             item.cateKey,
             item.outputLessName
           );
           const outputCssPath = path.join(
-            pathParser.dir.replace(monitorDirPath, outputMonitorDirPath),
+            pathParser.dir.replace(componentDirPath, outputcomponentDirPath),
             item.cateKey,
             item.outputCssName
           );
@@ -159,7 +160,7 @@ export const transferComponentLess = async (
   commonThemeList: themeItemProps[],
   config: lessysConfigProps
 ) => {
-  const monitorFileRegx = config.monitorDir + '/**/*.less'; // D:\lessys\__tests__\components\**\*.less
+  const monitorFileRegx = config.componentDir + '/**/*.less'; // D:\lessys\__tests__\components\**\*.less
   const lessPaths = await globby(monitorFileRegx);
   return (
     Promise.all(
@@ -168,7 +169,7 @@ export const transferComponentLess = async (
         generateOneLess(commonThemeList, config, lessPath)
       )
     )
-      // merge 各个组件同类的 css 文件，生成 .theme/color/*.css 文件
+      // merge css:  各个组件同类的 css 文件，生成 .theme/color/*.css 文件
       .then((results) => {
         const themeCssMap: strObjProps = {};
         results.forEach((arr) => {
@@ -198,28 +199,17 @@ export const transferComponentLess = async (
   );
 };
 
-export const main = async (config: lessysConfigProps) => {
+export const main = async () => {
+
+  const config: lessysConfigProps = await getUserConfig();
+
   // #1 获取主题的配置列表
   const commonThemeList = await getCommonTheme(config);
   // #2 生成 .theme/monitor/**/*.less 文件
   await transferComponentLess(commonThemeList, config);
+  if (config.watching) {
+    monitor();
+  }
 };
 
-// ------------------ test -------------------
-// const entryConfig: lessysConfigProps = {
-//   theme: {
-//     color: [
-//       '__tests__/theme/color/Default.less',
-//       '__tests__/theme/color/Blue.less'
-//     ],
-//     layout: [
-//       '__tests__/theme/layout/Default.less',
-//       '__tests__/theme/layout/Large.less'
-//     ]
-//   },
-//   monitorDir: '__tests__/components',
-//   outputDir: '.theme'
-// };
-// main(entryConfig);
-
-export default main;
+main();

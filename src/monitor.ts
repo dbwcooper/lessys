@@ -1,10 +1,11 @@
 import path from 'path';
 import gulp, { watch } from 'gulp';
 import gulpConcat from 'gulp-concat';
-import globby from 'globby';
 import { generateOneLess, getCommonTheme } from './index';
 import { lessysConfigProps, themeItemProps } from './Types';
-
+import {
+  getUserConfig
+} from './util';
 // #1 将 monitor 中的 less 文件转换为 css 文件
 // #2 合并 css 文件
 export const mergeThemeFiles = async (
@@ -21,58 +22,51 @@ export const mergeThemeFiles = async (
   });
 };
 
-const entryConfig: lessysConfigProps = {
-  theme: {
-    color: [
-      '__tests__/theme/color/Default.less',
-      '__tests__/theme/color/Blue.less'
-    ],
-    layout: [
-      '__tests__/theme/layout/Default.less',
-      '__tests__/theme/layout/Large.less'
-    ]
-  },
-  monitorDir: '__tests__/components',
-  outputDir: '.theme'
-};
 
-const watchRegx = `${entryConfig.monitorDir}/**/*.less`;
-const watcher = watch([watchRegx]);
-const getConfig = () => entryConfig;
+
+
 
 const mergeCss = (
   commonThemeList: themeItemProps[],
-  config: lessysConfigProps
+  config: lessysConfigProps,
+  watchingLessPath: string
 ) => {
   return Promise.all(
     commonThemeList.map((item) => {
       const regx = path.resolve(
-        config.monitorDir + '/**/' + item.cateKey + '/' + item.outputCssName
+        config.componentDir + '/**/' + item.cateKey + '/' + item.outputCssName
       );
       gulp
         .src(regx)
         .pipe(gulpConcat(item.outputCssName))
         .pipe(gulp.dest(path.parse(item.outputCssPath).dir));
     })
-  ).then(() => 'merge css successfully');
+  ).then(() => `${watchingLessPath} has transferred successfully`);
 };
 
 const handleLessChange = async (lessPath: string) => {
-  const config = getConfig();
+  const config = await getUserConfig();
   const commonThemeList = await getCommonTheme(config);
   return generateOneLess(commonThemeList, config, lessPath).then(() =>
-    mergeCss(commonThemeList, config)
+    mergeCss(commonThemeList, config, lessPath)
   );
 };
 
-watcher.on('change', function (path, __stats__) {
-  handleLessChange(path).then(console.log);
-});
 
-// watcher.on('add', function (path, stats) {
-//   console.log(`File ${path} was added`);
-// });
+export const monitor = async () => {
+  const entryConfig = await getUserConfig();
+  const watcher = watch([`${entryConfig.componentDir}/**/*.less`]);
 
-watcher.on('unlink', function (path, stats) {
-  console.log(`File ${path} was removed`);
-});
+  watcher.on('change', function (path, __stats__) {
+    handleLessChange(path).then(console.log);
+  });
+
+  watcher.on('unlink', function (path, stats) {
+    handleLessChange(path).then(console.log);
+  });
+
+  // watcher.on('add', function (path, stats) {
+  //   console.log(`File ${path} was added`);
+  // });
+}
+

@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import less from 'less';
-import { strObjProps, themeItemProps } from './Types';
+import { strObjProps, themeItemProps, lessysConfigProps } from './Types';
 
 const REGX_line = /\n/g; // 换行符
 const REGX_variables = /;/g;
@@ -186,3 +186,15 @@ export const lessToCss = async (
       return '';
     });
 };
+
+
+export const getUserConfig = async (): Promise<lessysConfigProps> => {
+  try {
+    const configPath = path.resolve('lessys.config.js');
+    return require(configPath);
+  } catch (err) {
+    if (err.code !== "MODULE_NOT_FOUND") {
+      console.error('lessys.config.js file cannot be found, please create it.');
+    }
+  }
+}

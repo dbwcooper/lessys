@@ -2,3 +2,4 @@ node_modules/*
 dist/
 .theme/
 yarn.lock
+.git/
