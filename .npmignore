@@ -1,9 +1,9 @@
-node_modules/*
-dist/
-.theme/
-yarn.lock
 .git/
-
 __tests__/*
+.theme/*
+node_modules/*
+.gitignore
+jest.config.js
 lessys.config.js
 nodemon.json
+yarn.lock
