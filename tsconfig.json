@@ -1,14 +1,13 @@
 {
-  "display": "Node 16",
+  "display": "Node 14",
   "ts-node": {
     "transpileOnly": true,
     "files": true
   },
   "compilerOptions": {
     "outDir": "./dist",
-    "module": "es2020",
-    "target": "es2021",
-    "esModuleInterop": true, // esm 支持 cjs, 默认为 false
+    "module": "ES2020",
+    "target": "es2020",
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,

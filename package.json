@@ -1,16 +1,16 @@
 {
   "name": "lessys",
   "version": "1.0.0",
-  "main": "./dist/index.js",
+  "main": "./lib/index.js",
   "description": "Build your themes by lessys",
   "license": "MIT",
   "bin": {
-    "lessys": "./dist/index.js"
+    "lessys": "./lib/index.js"
   },
   "scripts": {
     "dev": "nodemon",
-    "dev:watch": "etsc && node ./dist/index.js",
-    "build": "etsc"
+    "dev:watch": "etsc && node ./lib/index.js",
+    "build": "tsup src/index.ts "
   },
   "devDependencies": {
     "@jest/globals": "^27.0.6",
@@ -20,7 +20,8 @@
     "@types/less": "^3.0.3",
     "@types/prettier": "^2.3.2",
     "esbuild-node-tsc": "^1.6.1",
-    "nodemon": "^2.0.12"
+    "nodemon": "^2.0.12",
+    "tsup": "^4.14.0"
   },
   "dependencies": {
     "esbuild": "^0.12.20",

@@ -9,7 +9,7 @@ import prettier from 'prettier';
 export const formatLess = async (less_str: string): Promise<string> => {
   return Promise.resolve(less_str)
     .then(removeConstantLine)
-    .then(str => {
+    .then((str) => {
       return prettier.format(str, {
         arrowParens: 'always',
         parser: 'less',
@@ -25,7 +25,7 @@ export const formatLess = async (less_str: string): Promise<string> => {
         singleQuote: false,
         tabWidth: 2,
         useTabs: false,
-        vueIndentScriptAndStyle: false
+        vueIndentScriptAndStyle: false,
       });
     })
     .then(removeComments);

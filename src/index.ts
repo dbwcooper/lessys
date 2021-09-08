@@ -1,5 +1,5 @@
 import path from 'path';
-import globby from 'globby';
+import { globby } from 'globby';
 import fs from 'fs-extra';
 import { expandFunction, getLessFunction } from './expandFunction';
 import { extractVariables } from './extractVariables';
@@ -11,14 +11,14 @@ import {
   transferAbsolutePath,
   lessToCss,
   removeComments,
-  getUserConfig
+  getUserConfig,
 } from './util';
 import {
   lessysConfigProps,
   themeConfigProps,
   themeItemProps,
   strObjProps,
-  funcDefinedProps
+  funcDefinedProps,
 } from './Types';
 
 // 根据 公用变量、函数 删除一些与换肤无关结构。
@@ -55,7 +55,7 @@ export const getThemeVariables = async (
   return {
     lessVariables,
     lessFunction,
-    lessStr
+    lessStr,
   };
 };
 
@@ -75,7 +75,7 @@ export const getSingleTheme = async (
     outputCssName: cssName,
     outputLessName: lessName,
     cateKey: data.cateKey,
-    ...variables
+    ...variables,
   };
 };
 
@@ -90,7 +90,7 @@ export const getCommonTheme = async (
       pathList.push({
         cateKey,
         themePath: itemPath,
-        outputDir: config.outputDir
+        outputDir: config.outputDir,
       });
     });
   }
@@ -139,7 +139,7 @@ export const generateOneLess = async (
           const result = {
             outputLessPath,
             outputCssStr: cssStr,
-            outputThemeCssPath: item.outputCssPath
+            outputThemeCssPath: item.outputCssPath,
           };
           await Promise.all([
             fs
@@ -147,7 +147,7 @@ export const generateOneLess = async (
               .then(() => fs.writeFile(outputLessPath, outputLessStr)),
             fs
               .createFile(outputCssPath)
-              .then(() => fs.writeFile(outputCssPath, cssStr))
+              .then(() => fs.writeFile(outputCssPath, cssStr)),
           ]);
           return result;
         });
@@ -193,14 +193,13 @@ export const transferComponentLess = async (
               .then(() =>
                 fs.writeFile(themeCssPath, themeCssMap[themeCssPath])
               );
-          })
+          }),
         ]).then(() => 'success');
       })
   );
 };
 
 export const main = async () => {
-
   const config: lessysConfigProps = await getUserConfig();
 
   // #1 获取主题的配置列表

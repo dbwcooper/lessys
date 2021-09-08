@@ -3,7 +3,7 @@ import {
   lessFunctionProps,
   funcDefinedProps,
   funcUsedProps,
-  lessFuncTypeEnum
+  lessFuncTypeEnum,
 } from './Types';
 
 const REGX_func_name = /\.[a-zA-Z]*(?=\()/g; // 匹配 .getTagName( 等函数名
@@ -21,7 +21,7 @@ const getDefinedFuncEndIndex = (str: string, start: number): number => {
   let lcb = []; // left curly braces
   let rcb = []; // right curly braces
   // flag index
-  const fi = [...str.substring(start).matchAll(/[{}]/g)].find(item => {
+  const fi = [...str.substring(start).matchAll(/[{}]/g)].find((item) => {
     if (item[0] === '{') {
       lcb.push(item.index);
     }
@@ -36,8 +36,8 @@ const getDefinedFuncEndIndex = (str: string, start: number): number => {
 const getDefinedFuncParams = (fdn: string): string[] => {
   // function defined name
   const params = [...fdn.matchAll(REGX_func_params)]
-    .map(o => o[0])
-    .filter(o => !!o);
+    .map((o) => o[0])
+    .filter((o) => !!o);
   return params;
 };
 
@@ -99,7 +99,7 @@ const getLessFunctionImpl = (
       start,
       type: lessFuncTypeEnum.used,
       end,
-      params
+      params,
     };
     return fo;
   } else if (type === 'defined') {
@@ -116,7 +116,7 @@ const getLessFunctionImpl = (
       end: fde,
       type: lessFuncTypeEnum.defined,
       params,
-      content: fdc
+      content: fdc,
     };
     return fo;
   }
@@ -145,7 +145,7 @@ const expandFunctionImpl = (
     // function defined_content
     let fdc = fd[fu.name].content;
     const arr = [...fdc.matchAll(REGX_less_params)].reverse();
-    arr.forEach(p => {
+    arr.forEach((p) => {
       let variable_name = p[0];
       let index = p.index;
       let length = variable_name.length;
@@ -178,7 +178,7 @@ const getNestFunction = (
 
   // 找到一个调用的函数，并且此函数在其他预定义的函数中被使用了。
   // func Defined obj
-  const fdo = fra.find(item => fd[item[0]]);
+  const fdo = fra.find((item) => fd[item[0]]);
 
   if (!fdo) {
     return str;
@@ -190,7 +190,7 @@ const getNestFunction = (
     name: fdo[0],
     start: fdo.index, // 标记使用函数 开始的 index
     end, // 标记使用函数 结束的 index
-    params: getUsedFuncParams(str.substring(fdo.index, end), fdo[0])
+    params: getUsedFuncParams(str.substring(fdo.index, end), fdo[0]),
   };
   str = expandFunctionImpl(str, func_used, fd);
 
@@ -209,20 +209,20 @@ export const getLessFunction = async (
   // function regx array
   const fra = [...str.matchAll(REGX_func_name)];
   return Promise.all(
-    fra.map(item => {
+    fra.map((item) => {
       const func_name = item[0];
       const start = item.index;
       return getLessFunctionImpl(str, func_name, start);
     })
   )
-    .then(arr => {
+    .then((arr) => {
       const data: lessFunctionProps = {
         funcUsedList: [],
-        funcDefined: {}
+        funcDefined: {},
       };
       arr
-        .filter(i => i)
-        .forEach(obj => {
+        .filter((i) => i)
+        .forEach((obj) => {
           if (obj.type === 'used') {
             data.funcUsedList.push(obj);
           }
@@ -232,9 +232,9 @@ export const getLessFunction = async (
         });
       return data;
     })
-    .then(data => {
+    .then((data) => {
       // 处理预定义函数中有使用到其他函数 的情况
-      Object.keys(data.funcDefined).forEach(func_name => {
+      Object.keys(data.funcDefined).forEach((func_name) => {
         data.funcDefined[func_name].content = getNestFunction(
           data.funcDefined[func_name].content,
           data.funcDefined
@@ -257,11 +257,11 @@ export const expandFunction = async (
   str: string,
   commonFuncDefined?: { [name: string]: funcDefinedProps }
 ): Promise<string> => {
-  return getLessFunction(str).then(data => {
+  return getLessFunction(str).then((data) => {
     const funcUsedList = data.funcUsedList.reverse();
     const funcDefinedAll = { ...commonFuncDefined, ...data.funcDefined };
 
-    funcUsedList.forEach(funcUsed => {
+    funcUsedList.forEach((funcUsed) => {
       const c = str.substring(funcUsed.start, funcUsed.end);
       if (funcDefinedAll[funcUsed.name] && c.startsWith(funcUsed.name)) {
         str = expandFunctionImpl(str, funcUsed, data.funcDefined);

@@ -3,9 +3,8 @@ import gulp, { watch } from 'gulp';
 import gulpConcat from 'gulp-concat';
 import { generateOneLess, getCommonTheme } from './index';
 import { lessysConfigProps, themeItemProps } from './Types';
-import {
-  getUserConfig
-} from './util';
+import { getUserConfig } from './util';
+
 // #1 将 monitor 中的 less 文件转换为 css 文件
 // #2 合并 css 文件
 export const mergeThemeFiles = async (
@@ -21,10 +20,6 @@ export const mergeThemeFiles = async (
       .pipe(gulp.dest(outputThemeDir));
   });
 };
-
-
-
-
 
 const mergeCss = (
   commonThemeList: themeItemProps[],
@@ -52,7 +47,6 @@ const handleLessChange = async (lessPath: string) => {
   );
 };
 
-
 export const monitor = async () => {
   const entryConfig = await getUserConfig();
   const watcher = watch([`${entryConfig.componentDir}/**/*.less`]);
@@ -68,5 +62,4 @@ export const monitor = async () => {
   // watcher.on('add', function (path, stats) {
   //   console.log(`File ${path} was added`);
   // });
-}
-
+};

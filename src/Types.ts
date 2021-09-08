@@ -35,7 +35,7 @@ export interface lessysConfigProps {
   };
   componentDir: string;
   outputDir: string; // '.theme'
-  watching: boolean, // 监控 componentDir 文件夹中的 less 文件是否变更
+  watching: boolean; // 监控 componentDir 文件夹中的 less 文件是否变更
 }
 
 export interface themeItemProps {
@@ -64,7 +64,7 @@ export interface lessVariablesObjProps {
 export enum lessFuncTypeEnum {
   'used' = 'used',
   'defined' = 'defined',
-  'others' = 'others'
+  'others' = 'others',
 }
 
 export interface monitorLessFileProps {

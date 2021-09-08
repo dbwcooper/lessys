@@ -175,7 +175,7 @@ export const lessToCss = async (
 ): Promise<string> => {
   const renderOptions = {
     math: 'always' as any, // 运算 10px/2
-    modifyVars: themeItem.lessVariables
+    modifyVars: themeItem.lessVariables,
   };
   return less
     .render(lessInputStr, renderOptions)
@@ -187,14 +187,13 @@ export const lessToCss = async (
     });
 };
 
-
 export const getUserConfig = async (): Promise<lessysConfigProps> => {
   try {
     const configPath = path.resolve('lessys.config.js');
-    return require(configPath);
+    return import(configPath)
   } catch (err) {
-    if (err.code !== "MODULE_NOT_FOUND") {
+    if (err.code !== 'MODULE_NOT_FOUND') {
       console.error('lessys.config.js file cannot be found, please create it.');
     }
   }
-}
+};

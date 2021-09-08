@@ -17,7 +17,7 @@ export const extractVariablesImpl = (
     str
       .split(REGX_br)
       // line string
-      .filter(ls => {
+      .filter((ls) => {
         if (
           ls.includes('{') ||
           ls.includes('}') ||
@@ -35,10 +35,10 @@ export const extractVariablesImpl = (
           let is = ls.search(':'); // indicator start
 
           // line_less_variables_array
-          const llva = [...ls.substring(is).matchAll(REGX_less_params)].map(i =>
-            i[0].trim()
+          const llva = [...ls.substring(is).matchAll(REGX_less_params)].map(
+            (i) => i[0].trim()
           );
-          return llva.some(k => variable[k]);
+          return llva.some((k) => variable[k]);
         }
         return false;
       })
@@ -58,12 +58,12 @@ export const extractVariables = (
   str: string,
   variable: strObjProps
 ): Promise<string> => {
-  return Promise.resolve(getLessVariable(str)).then(fv => {
+  return Promise.resolve(getLessVariable(str)).then((fv) => {
     // file variable
     if (typeof variable === 'object') {
       // merge variable
       const mv: strObjProps = {
-        ...variable
+        ...variable,
       };
 
       for (const k in fv) {
