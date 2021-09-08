@@ -1,1 +1,2 @@
-#### Build your themes by lessys
+# lessys
+A skinning tool based on less, will be released soon
